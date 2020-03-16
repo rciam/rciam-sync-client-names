@@ -1,4 +1,5 @@
 import psycopg2  # pip install psycopg2-binary
+from psycopg2.extras import execute_values
 import sys
 import config
 import logging
@@ -51,32 +52,26 @@ def sync(dry_run):
     #
     try:
         logging.debug("Executing 'Select MITREiD clients' query!")
-        cursorOIDC.execute("""SELECT client_name, client_id FROM client_details WHERE client_name IS NOT NULL;""")
+        cursorOIDC.execute("""SELECT client_id, client_name FROM client_details WHERE client_name IS NOT NULL;""")
     except Exception as e:
         logging.error("Uh oh, can't SEexecute query.")
         logging.error(e)
         sys.stderr.write("Can't execute 'Select MITREiD clients' query!")
 
-    clientDetails = [{'client_name': row[0], 'client_id': row[1]}
-                     for row in cursorOIDC.fetchall()]
+    clientDetails = cursorOIDC.fetchall()
 
     #
     # Insert client names into SSPMOD_proxystatistics DB
     #
-    params = []
-    for client in clientDetails:
-        # TODO: special character escape
-        params.append("('" + client['client_id'] + "', '" +
-                      client['client_name'].replace("'", "''") + "')")
-
     query = 'INSERT INTO serviceprovidersmap (identifier, name) VALUES %s ' + \
         'ON CONFLICT (identifier) DO UPDATE SET name = EXCLUDED.name ' + \
-        'WHERE serviceprovidersmap.name IS DISTINCT FROM EXCLUDED.name;' % ', '.join(params)
+        'WHERE serviceprovidersmap.name IS DISTINCT FROM EXCLUDED.name;'
 
     try:
         logging.debug(
             "Executing 'Insert client names into SSPMOD_proxystatistics DB' query!")
-        cursorProxystats.execute(query, clientDetails)
+        # https://www.psycopg.org/docs/extras.html#psycopg2.extras.execute_values
+        execute_values(cursorProxystats, query, clientDetails)
     except Exception as e:
         logging.error("Uh oh, can't execute query.")
         logging.error(e)
