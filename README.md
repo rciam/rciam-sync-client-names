@@ -4,7 +4,16 @@ A script that synchronizes client names from MITREiD DB to simplesamlphp-module-
 
 ## Instalation
 
-Copy the repo and create a virtualenv
+Copy the repo and config the script
+
+```bash
+git clone https://github.com/nikosev/rciam-insert-client-names.git
+cd rciam-insert-client-names
+cp config-example.py config.py
+nano config.py
+```
+
+Create a virtualenv and run the script
 
 ```bash
 virtualenv -p python3 venv
