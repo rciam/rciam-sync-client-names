@@ -3,10 +3,11 @@ from psycopg2.extras import execute_values
 import sys
 import config
 import logging
-
+import os
 
 def sync(dry_run):
-    logging.basicConfig(filename='log/insertClientNames.log', level=logging.DEBUG,
+    pathname = str(os.path.dirname(os.path.realpath(__file__)))
+    logging.basicConfig(filename=pathname + '/log/insertClientNames.log', level=logging.DEBUG,
                         filemode='a', format='%(asctime)s - %(message)s')
 
     #
