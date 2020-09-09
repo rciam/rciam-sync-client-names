@@ -1,38 +1,27 @@
-# rciam-insert-client-names
+# rciam-sync-client-names
 
-A script that synchronizes client names from MITREiD DB to simplesamlphp-module-proxystatistics DB.
+A Python-based tool for synchronising client names from MITREid Connect DB to simplesamlphp-module-proxystatistics DB.
 
 ## Instalation
 
-Copy the repo and config the script
+Install from git and configure
 
 ```bash
-git clone https://github.com/nikosev/rciam-insert-client-names.git
-cd rciam-insert-client-names
+git clone https://github.com/rciam/rciam-sync-client-names.git
+cd rciam-sync-client-names
 cp config-example.py config.py
-nano config.py
+vi config.py
 ```
 
-Create a virtualenv and run the script
+Create a Python virtualenv, install dependencies, and run the script
 
 ```bash
-virtualenv -p python3 venv
-source venv/bin/activate
-(venv) pip install psycopg2-binary
+virtualenv -p python3 .venv
+source .venv/bin/activate
+(venv) pip3 install -r requirements.txt
 (venv) python3 main.py
+🍺
 ```
-
-## Configuration
-
-The following configuration options are available:
-
-## Compatibility matrix
-
-This table matches the module version with the supported SimpleSAMLphp version.
-
-| Script |  SimpleSAMLphp-module |
-|:------:|:---------------------:|
-|        |                       |
 
 ## License
 
