@@ -21,7 +21,7 @@ def sync(dry_run):
     except Exception as e:
         logging.error("Could not connect to MITREid Connect DB")
         logging.error(e)
-        sys.stderr.write("Could not connect to MITREid Connect DB")
+        raise SystemExit("Could not connect to MITREid Connect DB")
 
     # Create psycopg2 cursor that can execute queries
     cursorOIDC = connOIDC.cursor()
@@ -37,7 +37,7 @@ def sync(dry_run):
     except Exception as e:
         logging.error("Could not connect to proxystatistics DB")
         logging.error(e)
-        sys.stderr.write("Could not connect to proxystatistics DB")
+        raise SystemExit("Could not connect to proxystatistics DB")
 
     # Create psycopg2 cursor that can execute queries
     cursorProxystats = connProxystats.cursor()
@@ -53,7 +53,7 @@ def sync(dry_run):
         logging.error("Could not retrieve client details from MITREid "
                       "Connect DB")
         logging.error(e)
-        sys.stderr.write("Could not retrieve client details from MITREid "
+        raise SystemExit("Could not retrieve client details from MITREid "
                          "Connect DB")
 
     clientDetails = cursorOIDC.fetchall()
@@ -72,7 +72,7 @@ def sync(dry_run):
     except Exception as e:
         logging.error("Could not update proxystatistics DB query")
         logging.error(e)
-        sys.stderr.write("Could not update proxystatistics DB query")
+        raise SystemExit("Could not update proxystatistics DB query")
 
     if not dry_run:
         logging.info("Commit proxystatistics DB update")
