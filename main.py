@@ -15,10 +15,12 @@ def sync(dry_run):
     if config.mitreid_config:
         oidc_config = config.mitreid_config
         oidc_query = "SELECT client_id, client_name FROM client_details WHERE client_name IS NOT NULL;"
+        oidc_flag = "mitreid"
 
     if config.keycloak_config:
         oidc_config = config.keycloak_config
         oidc_query = "SELECT client_id, name FROM client WHERE realm_id='" + oidc_config["realm"] + "' AND name IS NOT NULL;"
+        oidc_flag = "keycloak"
 
     connect_oidc_str = (
         "dbname='" + oidc_config["dbname"]
@@ -65,6 +67,15 @@ def sync(dry_run):
         raise SystemExit("Could not retrieve client details from OpenID Provider DB")
 
     clientDetails = cursorOIDC.fetchall()
+
+    if oidc_flag == "keycloak":
+        for i in range(len(clientDetails)):
+            if clientDetails[i][1].startswith("${"):
+                client_list = list(clientDetails[i])
+                logging.info("Going to edit the client name: " + client_list[1])
+                client_list[1] = "Keycloak-" + oidc_config["realm"] + "-" + client_list[0]
+                logging.info("New client name: " + client_list[1])
+                clientDetails[i] = tuple(client_list)
 
     #
     # Insert client names into SSPMOD_proxystatistics DB
