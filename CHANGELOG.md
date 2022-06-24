@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update `psycopg2-binary` to v2.9.3
+- Update code format
 
 ## [v1.0.1] - 2021-07-12
 
