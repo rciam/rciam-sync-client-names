@@ -1,6 +1,6 @@
 # rciam-sync-client-names
 
-A Python-based tool for synchronising client names from MITREid Connect DB to simplesamlphp-module-proxystatistics DB.
+A Python-based tool for synchronising client names from Keycloak or MITREid Connect DB to simplesamlphp-module-proxystatistics DB.
 
 ## Instalation
 
