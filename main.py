@@ -11,17 +11,30 @@ def sync(dry_run):
                         level=logging.DEBUG,
                         filemode='a', format='%(asctime)s - %(message)s')
 
-    # Initialise connection to MITREid Connect DB
-    connect_oidc_str = "dbname='" + config.mitreid_config['dbname'] + \
-        "' user='" + config.mitreid_config['user'] + \
-        "' host='" + config.mitreid_config['host'] + \
-        "' password='" + config.mitreid_config['password'] + "'"
+    # Initialise connection to OpenID Provider DB
+    if config.mitreid_config:
+        oidc_config = config.mitreid_config
+        oidc_query = "SELECT client_id, client_name FROM client_details WHERE client_name IS NOT NULL;"
+        oidc_flag = "mitreid"
+
+    if config.keycloak_config:
+        oidc_config = config.keycloak_config
+        oidc_query = "SELECT client_id, name FROM client WHERE realm_id='" + oidc_config["realm"] + "' AND name IS NOT NULL;"
+        oidc_flag = "keycloak"
+
+    connect_oidc_str = (
+        "dbname='" + oidc_config["dbname"]
+        + "' user='" + oidc_config["user"]
+        + "' host='" + oidc_config["host"]
+        + "' password='" + oidc_config["password"] + "'"
+    )
+
     try:
         connOIDC = psycopg2.connect(connect_oidc_str)
     except Exception as e:
-        logging.error("Could not connect to MITREid Connect DB")
+        logging.error("Could not connect to OpenID Provider DB")
         logging.error(e)
-        raise SystemExit("Could not connect to MITREid Connect DB")
+        raise SystemExit("Could not connect to OpenID Provider DB")
 
     # Create psycopg2 cursor that can execute queries
     cursorOIDC = connOIDC.cursor()
@@ -43,20 +56,26 @@ def sync(dry_run):
     cursorProxystats = connProxystats.cursor()
 
     #
-    # Select MITREid Connect clients
+    # Select OpenID Provider clients
     #
-    logging.debug("Retrieving client details from MITREid Connect DB")
+    logging.debug("Retrieving client details from OpenID Provider DB")
     try:
-        cursorOIDC.execute("SELECT client_id, client_name "
-        "FROM client_details WHERE client_name IS NOT NULL;")
+        cursorOIDC.execute(oidc_query)
     except Exception as e:
-        logging.error("Could not retrieve client details from MITREid "
-                      "Connect DB")
+        logging.error("Could not retrieve client details from OpenID Provider DB")
         logging.error(e)
-        raise SystemExit("Could not retrieve client details from MITREid "
-                         "Connect DB")
+        raise SystemExit("Could not retrieve client details from OpenID Provider DB")
 
     clientDetails = cursorOIDC.fetchall()
+
+    if oidc_flag == "keycloak":
+        for i in range(len(clientDetails)):
+            if clientDetails[i][1].startswith("${"):
+                client_list = list(clientDetails[i])
+                logging.info("Going to edit the client name: " + client_list[1])
+                client_list[1] = "Keycloak-" + oidc_config["realm"] + "-" + client_list[0]
+                logging.info("New client name: " + client_list[1])
+                clientDetails[i] = tuple(client_list)
 
     #
     # Insert client names into SSPMOD_proxystatistics DB
